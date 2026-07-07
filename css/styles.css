@@ -253,6 +253,8 @@ body::before {
   font-style: italic;
   font-size: clamp(3.4rem, 19vw, 8rem);
   line-height: 0.98;
+  /* небольшие отступы, чтобы background-clip:text не срезал italic-терминалы букв */
+  padding: 0.06em 0.18em;
   background: linear-gradient(100deg, var(--accent-deep), var(--accent) 55%, var(--accent-deep));
   -webkit-background-clip: text;
   background-clip: text;
@@ -304,7 +306,10 @@ body::before {
   font-family: var(--font-display);
   font-weight: 600;
   font-size: clamp(10rem, 58vw, 24rem);
-  line-height: 0.86;
+  line-height: 1;
+  /* отступы обязательны: у Playfair «Л» левый завиток-терминал выходит за
+     границы бокса, а background-clip:text красит только внутри бокса → срез */
+  padding: 0.05em 0.22em;
   background: linear-gradient(150deg, var(--accent-deep), var(--accent) 50%, #ffb0cd);
   -webkit-background-clip: text;
   background-clip: text;
