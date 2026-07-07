@@ -47,25 +47,22 @@
    ========================================================================== */
 html {
   height: 100%;
+  overflow-x: hidden; /* жёстко: никакой горизонтальной прокрутки/швов на iOS */
   /* фон под резинку-overscroll (баунс), иначе по краям мелькают белые поля */
   background: linear-gradient(160deg, var(--rose-50), var(--rose-200));
   /* снимаем double-tap-зум на всём документе */
   touch-action: manipulation;
 }
 body {
+  position: relative;
+  width: 100%;
+  max-width: 100%;
   min-height: 100dvh;
+  overflow-x: hidden;
   touch-action: manipulation;
   font-family: var(--font-body);
   color: var(--text);
   background-color: var(--rose-100);
-  background-image:
-    radial-gradient(60% 55% at 18% 12%, rgba(255, 209, 227, 0.9) 0%, rgba(255, 209, 227, 0) 60%),
-    radial-gradient(55% 50% at 85% 20%, rgba(255, 206, 84, 0.28) 0%, rgba(255, 206, 84, 0) 55%),
-    radial-gradient(70% 60% at 75% 85%, rgba(255, 122, 168, 0.55) 0%, rgba(255, 122, 168, 0) 60%),
-    radial-gradient(80% 70% at 30% 90%, rgba(255, 240, 246, 0.8) 0%, rgba(255, 240, 246, 0) 55%),
-    linear-gradient(160deg, var(--rose-50), var(--rose-200));
-  background-attachment: fixed;
-  overflow-x: hidden;
   -webkit-font-smoothing: antialiased;
   -webkit-tap-highlight-color: transparent;
   /* Сайт-открытка: выделять/копировать нечего — убираем выделение при
@@ -75,13 +72,25 @@ body {
   -webkit-touch-callout: none;
 }
 
-/* Тонкая зернистость поверх — «съедает» плоскость градиента */
-body::before {
-  content: "";
+/* Фон-атмосфера: ФИКСИРОВАННЫЙ слой (а не background-attachment:fixed — он даёт
+   швы/артефакты на iOS Safari). Меш градиентов + тонкий шум за контентом. */
+.bg {
   position: fixed;
   inset: 0;
-  z-index: 0;
+  z-index: -1;
   pointer-events: none;
+  background-color: var(--rose-100);
+  background-image:
+    radial-gradient(60% 55% at 18% 12%, rgba(255, 209, 227, 0.9) 0%, rgba(255, 209, 227, 0) 60%),
+    radial-gradient(55% 50% at 85% 20%, rgba(255, 206, 84, 0.28) 0%, rgba(255, 206, 84, 0) 55%),
+    radial-gradient(70% 60% at 75% 85%, rgba(255, 122, 168, 0.55) 0%, rgba(255, 122, 168, 0) 60%),
+    radial-gradient(80% 70% at 30% 90%, rgba(255, 240, 246, 0.8) 0%, rgba(255, 240, 246, 0) 55%),
+    linear-gradient(160deg, var(--rose-50), var(--rose-200));
+}
+.bg::after {
+  content: "";
+  position: absolute;
+  inset: 0;
   opacity: 0.05;
   mix-blend-mode: multiply;
   background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='140' height='140'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");
@@ -259,10 +268,11 @@ body::before {
   font-family: var(--font-display);
   font-weight: 600;
   font-style: italic;
-  font-size: clamp(3.4rem, 19vw, 8rem);
+  font-size: clamp(2.6rem, 15.5vw, 6.5rem);
   line-height: 1.06;
+  max-width: 100%;
   /* отступы, чтобы background-clip:text не срезал italic-терминалы и хвост «р» снизу */
-  padding: 0.08em 0.2em 0.22em;
+  padding: 0.08em 0.14em 0.2em;
   /* мягкий градиент — лёгкая игра оттенка, без сильного ухода в светлый */
   background: linear-gradient(115deg, var(--accent-deep), var(--accent) 60%, #ff85af);
   -webkit-background-clip: text;
