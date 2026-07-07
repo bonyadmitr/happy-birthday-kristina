@@ -1,0 +1,492 @@
+/* ==========================================================================
+   Base / reset
+   ========================================================================== */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+:root {
+  /* Заполняется темой ниже. Дефолт — romantic. */
+  color-scheme: light;
+}
+
+html,
+body {
+  height: 100%;
+}
+
+body {
+  min-height: 100dvh;
+  font-family: "Nunito", "Comfortaa", system-ui, -apple-system, sans-serif;
+  color: var(--text);
+  background: var(--bg);
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+  -webkit-tap-highlight-color: transparent;
+  transition: background 0.6s ease, color 0.6s ease;
+}
+
+/* ==========================================================================
+   Темы  (переключаются атрибутом data-theme на <html>)
+   ========================================================================== */
+
+/* Романтичная — тёплая, по умолчанию */
+[data-theme="romantic"] {
+  --bg: radial-gradient(140% 120% at 50% 0%, #ffe1ec 0%, #ffd0e0 35%, #ffc0cb 70%, #ffb3c8 100%);
+  --text: #6e2b47;
+  --text-soft: #9a5c74;
+  --accent: #ff5c93;
+  --accent-2: #ffa5c3;
+  --gift-box: linear-gradient(160deg, #ff7eb3, #ff5c93);
+  --gift-lid: linear-gradient(160deg, #ff8fbf, #ff6ba3);
+  --ribbon: #fff3f8;
+  --bow: #ffd166;
+  --card: rgba(255, 255, 255, 0.55);
+  --confetti-colors: #ff5c93, #ffa5c3, #ffd166, #ffffff, #ff8fbf;
+  --heading-font: "Playfair Display", serif;
+}
+
+/* Элегантная — сдержанный минимализм 2026 */
+[data-theme="elegant"] {
+  color-scheme: dark;
+  --bg: radial-gradient(140% 120% at 50% 0%, #2a2620 0%, #1c1a17 55%, #141210 100%);
+  --text: #f2ead9;
+  --text-soft: #b6ad99;
+  --accent: #c8a96a;
+  --accent-2: #e6d3a3;
+  --gift-box: linear-gradient(160deg, #3a352c, #2a251d);
+  --gift-lid: linear-gradient(160deg, #443e33, #322c22);
+  --ribbon: #c8a96a;
+  --bow: #e6d3a3;
+  --card: rgba(255, 255, 255, 0.06);
+  --confetti-colors: #c8a96a, #e6d3a3, #f2ead9, #9c8557, #ffffff;
+  --heading-font: "Playfair Display", serif;
+}
+
+/* Игривая — ярко и празднично */
+[data-theme="playful"] {
+  --bg: linear-gradient(160deg, #fff4c2 0%, #ffd6e8 45%, #c2f0ff 100%);
+  --text: #3a2b5e;
+  --text-soft: #6b5b9a;
+  --accent: #ff6b6b;
+  --accent-2: #ffd93d;
+  --gift-box: linear-gradient(160deg, #ff6b6b, #ee5253);
+  --gift-lid: linear-gradient(160deg, #ff8787, #ff6b6b);
+  --ribbon: #48dbfb;
+  --bow: #ffd93d;
+  --card: rgba(255, 255, 255, 0.55);
+  --confetti-colors: #ff6b6b, #ffd93d, #48dbfb, #1dd1a1, #ff9ff3;
+  --heading-font: "Comfortaa", cursive;
+}
+
+/* Звёздная — тёмный градиент, свечение */
+[data-theme="dreamy"] {
+  color-scheme: dark;
+  --bg: radial-gradient(120% 120% at 50% -10%, #3b2c6b 0%, #241a4a 45%, #120e29 100%);
+  --text: #ece8ff;
+  --text-soft: #a99fd6;
+  --accent: #b39cff;
+  --accent-2: #7ce7ff;
+  --gift-box: linear-gradient(160deg, #6c5ce7, #4834aa);
+  --gift-lid: linear-gradient(160deg, #7d6cf0, #5a45c4);
+  --ribbon: #7ce7ff;
+  --bow: #ffd166;
+  --card: rgba(255, 255, 255, 0.08);
+  --confetti-colors: #b39cff, #7ce7ff, #ffd166, #ffffff, #ff9ff3;
+  --heading-font: "Playfair Display", serif;
+}
+
+/* ==========================================================================
+   Экран распаковки подарка
+   ========================================================================== */
+.gift-screen {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: clamp(1.5rem, 6vh, 3rem);
+  background: var(--bg);
+  padding: max(2rem, env(safe-area-inset-top)) 1.5rem
+    max(2rem, env(safe-area-inset-bottom));
+  transition: opacity 0.7s ease, transform 0.7s ease, visibility 0.7s;
+  cursor: pointer;
+}
+.gift-screen.opening .gift {
+  animation: gift-burst 0.7s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+.gift-screen.gone {
+  opacity: 0;
+  transform: scale(1.15);
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.gift {
+  position: relative;
+  width: min(46vw, 200px);
+  height: min(46vw, 200px);
+  animation: gift-idle 2.2s ease-in-out infinite;
+  transform-origin: center bottom;
+  touch-action: manipulation;
+}
+.gift:focus-visible {
+  outline: 3px solid var(--accent);
+  outline-offset: 12px;
+  border-radius: 12px;
+}
+
+.gift-box {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 72%;
+  background: var(--gift-box);
+  border-radius: 10px;
+  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.22);
+}
+.gift-lid {
+  position: absolute;
+  top: 8%;
+  left: -6%;
+  right: -6%;
+  height: 26%;
+  background: var(--gift-lid);
+  border-radius: 10px;
+  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.2);
+  z-index: 2;
+  transition: transform 0.5s ease;
+}
+.gift-ribbon-v {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 50%;
+  width: 16%;
+  transform: translateX(-50%);
+  background: var(--ribbon);
+  opacity: 0.92;
+}
+.gift-ribbon-h {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: calc(8% + 13%);
+  height: 16%;
+  transform: translateY(-50%);
+  background: var(--ribbon);
+  opacity: 0.92;
+  z-index: 1;
+}
+
+/* Бантик */
+.bow {
+  position: absolute;
+  top: -42%;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 70%;
+  height: 60%;
+}
+.bow-loop {
+  position: absolute;
+  top: 10%;
+  width: 46%;
+  height: 78%;
+  background: var(--bow);
+  border-radius: 60% 60% 40% 40%;
+}
+.bow-left {
+  left: 2%;
+  transform: rotate(-24deg);
+}
+.bow-right {
+  right: 2%;
+  transform: rotate(24deg);
+}
+.bow-knot {
+  position: absolute;
+  top: 34%;
+  left: 50%;
+  width: 24%;
+  height: 40%;
+  transform: translateX(-50%);
+  background: var(--bow);
+  border-radius: 40%;
+  filter: brightness(0.94);
+  z-index: 2;
+}
+
+.gift-hint {
+  font-size: clamp(1rem, 4.5vw, 1.35rem);
+  font-weight: 600;
+  color: var(--text-soft);
+  animation: pulse 1.8s ease-in-out infinite;
+  text-align: center;
+}
+
+/* ==========================================================================
+   Основной сайт
+   ========================================================================== */
+.site {
+  position: relative;
+  z-index: 1;
+}
+
+.section {
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: max(3rem, env(safe-area-inset-top)) 1.5rem
+    max(3rem, env(safe-area-inset-bottom));
+  gap: 1.25rem;
+}
+
+/* Hero */
+.hero-greeting {
+  font-size: clamp(1.3rem, 6vw, 2rem);
+  font-weight: 600;
+  color: var(--text-soft);
+  letter-spacing: 0.01em;
+}
+.hero-name {
+  font-family: var(--heading-font);
+  font-size: clamp(3rem, 17vw, 7rem);
+  line-height: 1.02;
+  color: var(--accent);
+  text-shadow: 0 6px 30px color-mix(in srgb, var(--accent) 35%, transparent);
+}
+.hero-subtitle {
+  max-width: 26ch;
+  font-size: clamp(1rem, 4.5vw, 1.3rem);
+  color: var(--text-soft);
+  line-height: 1.5;
+}
+
+.scroll-cue {
+  margin-top: clamp(1.5rem, 8vh, 4rem);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--text-soft);
+  font-size: 0.85rem;
+  animation: bob 1.8s ease-in-out infinite;
+}
+.chevron {
+  width: 12px;
+  height: 12px;
+  border-right: 2px solid currentColor;
+  border-bottom: 2px solid currentColor;
+  transform: rotate(45deg);
+}
+
+/* Финал */
+.finale {
+  gap: 2rem;
+}
+.finale-letter {
+  font-family: var(--heading-font);
+  font-size: clamp(9rem, 55vw, 22rem);
+  line-height: 0.9;
+  font-weight: 600;
+  color: var(--accent);
+  cursor: pointer;
+  touch-action: manipulation;
+  text-shadow: 0 10px 60px color-mix(in srgb, var(--accent) 45%, transparent);
+  animation: heartbeat 2.4s ease-in-out infinite;
+  transition: transform 0.2s ease;
+}
+.finale-letter:active {
+  transform: scale(0.94);
+}
+.finale-letter:focus-visible {
+  outline: 3px solid var(--accent);
+  outline-offset: 10px;
+  border-radius: 16px;
+}
+.finale-caption {
+  font-size: clamp(1rem, 4.5vw, 1.25rem);
+  color: var(--text-soft);
+  max-width: 24ch;
+}
+
+.btn-replay {
+  font: inherit;
+  font-weight: 700;
+  font-size: 1rem;
+  color: var(--text);
+  background: var(--card);
+  border: 1.5px solid color-mix(in srgb, var(--accent) 40%, transparent);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  padding: 0.85rem 1.6rem;
+  min-height: 48px;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: transform 0.15s ease, background 0.3s ease;
+}
+.btn-replay:active {
+  transform: scale(0.96);
+}
+
+/* ==========================================================================
+   Плавающие частицы (шарики / сердечки)
+   ========================================================================== */
+.floaties {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+.floaty {
+  position: absolute;
+  bottom: -12vh;
+  font-size: var(--sz, 1.8rem);
+  opacity: var(--op, 0.7);
+  will-change: transform;
+  animation: rise var(--dur, 14s) linear infinite;
+  animation-delay: var(--delay, 0s);
+  transform: translateX(0);
+}
+
+/* ==========================================================================
+   Музыкальная кнопка
+   ========================================================================== */
+.music-toggle[hidden] {
+  display: none;
+}
+.music-toggle {
+  position: fixed;
+  top: max(1rem, env(safe-area-inset-top));
+  right: max(1rem, env(safe-area-inset-right));
+  z-index: 40;
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  border: none;
+  background: var(--card);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  color: var(--accent);
+  font-size: 1.3rem;
+  cursor: pointer;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+  display: grid;
+  place-items: center;
+}
+.music-toggle.playing .music-icon {
+  animation: spin 3s linear infinite;
+}
+
+/* ==========================================================================
+   Переключатель тем
+   ========================================================================== */
+.theme-switch {
+  position: fixed;
+  bottom: max(1rem, env(safe-area-inset-bottom));
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 40;
+  display: flex;
+  gap: 0.6rem;
+  padding: 0.5rem 0.7rem;
+  border-radius: 999px;
+  background: var(--card);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+}
+.theme-switch button {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  border: 2px solid rgba(255, 255, 255, 0.7);
+  background: var(--sw);
+  cursor: pointer;
+  padding: 0;
+  transition: transform 0.15s ease;
+}
+.theme-switch button:active {
+  transform: scale(0.9);
+}
+
+/* ==========================================================================
+   Reveal on scroll  (IntersectionObserver добавляет .in)
+   ========================================================================== */
+.reveal {
+  opacity: 0;
+  transform: translateY(28px);
+  transition: opacity 0.8s ease, transform 0.8s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.reveal.in {
+  opacity: 1;
+  transform: none;
+}
+
+/* ==========================================================================
+   Анимации
+   ========================================================================== */
+@keyframes gift-idle {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  25% { transform: translateY(-6px) rotate(-2.5deg); }
+  75% { transform: translateY(-6px) rotate(2.5deg); }
+}
+@keyframes gift-burst {
+  0% { transform: scale(1); }
+  40% { transform: scale(1.12) rotate(-3deg); }
+  100% { transform: scale(0) rotate(8deg); opacity: 0; }
+}
+@keyframes pulse {
+  0%, 100% { opacity: 0.55; transform: scale(1); }
+  50% { opacity: 1; transform: scale(1.04); }
+}
+@keyframes bob {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(8px); }
+}
+@keyframes heartbeat {
+  0%, 100% { transform: scale(1); }
+  8% { transform: scale(1.06); }
+  16% { transform: scale(1); }
+  24% { transform: scale(1.06); }
+  32% { transform: scale(1); }
+}
+@keyframes rise {
+  0% { transform: translate(0, 0) rotate(0deg); }
+  100% { transform: translate(var(--drift, 6vw), -118vh) rotate(var(--spin, 40deg)); }
+}
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* ==========================================================================
+   Доступность: уважать reduced-motion
+   ========================================================================== */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.15s !important;
+  }
+  .floaties {
+    display: none;
+  }
+  .reveal {
+    opacity: 1;
+    transform: none;
+  }
+}
