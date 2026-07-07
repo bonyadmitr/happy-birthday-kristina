@@ -45,13 +45,16 @@
 /* ==========================================================================
    Фон-атмосфера: градиентный меш + мягкий шум + виньетка
    ========================================================================== */
-html,
-body {
+html {
   height: 100%;
+  /* фон под резинку-overscroll (баунс), иначе по краям мелькают белые поля */
+  background: linear-gradient(160deg, var(--rose-50), var(--rose-200));
+  /* снимаем double-tap-зум на всём документе */
+  touch-action: manipulation;
 }
-
 body {
   min-height: 100dvh;
+  touch-action: manipulation;
   font-family: var(--font-body);
   color: var(--text);
   background-color: var(--rose-100);
@@ -316,6 +319,9 @@ body::before {
   /* отступы обязательны: у Playfair «Л» левый завиток-терминал выходит за
      границы бокса, а background-clip:text красит только внутри бокса → срез */
   padding: 0.05em 0.22em;
+  /* глиф «Л» из-за правого бокового пробела оптически смещён влево — компенсируем
+     сдвигом вправо (при text-align:center indent сдвигает на половину, отсюда 0.044em) */
+  text-indent: 0.044em;
   background: linear-gradient(150deg, var(--accent-deep), var(--accent) 50%, #ffb0cd);
   -webkit-background-clip: text;
   background-clip: text;
@@ -404,25 +410,63 @@ body::before {
 }
 .music-toggle {
   position: fixed;
-  top: max(1rem, env(safe-area-inset-top));
-  right: max(1rem, env(safe-area-inset-right));
+  /* Верхний правый угол, с запасом ниже safe-area — не уходит под чёлку/строку */
+  top: max(0.9rem, calc(env(safe-area-inset-top) + 0.5rem));
+  right: max(0.9rem, env(safe-area-inset-right));
   z-index: 40;
-  width: 46px;
-  height: 46px;
+  width: 48px;
+  height: 48px;
   border-radius: 50%;
-  border: none;
-  background: var(--card);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-  color: var(--accent);
-  font-size: 1.3rem;
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  background: linear-gradient(140deg, #ff8fbf 0%, var(--accent) 48%, var(--accent-deep) 100%);
+  color: #fff;
+  font-size: 1.35rem;
+  line-height: 1;
   cursor: pointer;
-  box-shadow: var(--shadow-soft);
+  /* Тёмно-розовое свечение-тень + мягкий внутренний блик сверху */
+  box-shadow:
+    0 10px 26px rgba(226, 58, 114, 0.42),
+    0 2px 6px rgba(226, 58, 114, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.4);
   display: grid;
   place-items: center;
+  transition: transform 0.18s ease, box-shadow 0.25s ease, opacity 0.25s ease;
+  -webkit-tap-highlight-color: transparent;
+}
+.music-toggle:active {
+  transform: scale(0.92);
+}
+/* Пауза: приглушаем, чтобы состояние читалось */
+.music-toggle:not(.playing) {
+  opacity: 0.78;
+  filter: saturate(0.8);
+}
+/* Играет: усиливаем свечение + мягкая пульсация нимба */
+.music-toggle.playing {
+  box-shadow:
+    0 12px 30px rgba(226, 58, 114, 0.55),
+    0 0 0 6px rgba(255, 79, 139, 0.14),
+    inset 0 1px 0 rgba(255, 255, 255, 0.45);
+  animation: music-halo 2.4s ease-in-out infinite;
 }
 .music-toggle.playing .music-icon {
   animation: spin 3s linear infinite;
+}
+@keyframes music-halo {
+  0%, 100% { box-shadow:
+    0 12px 30px rgba(226, 58, 114, 0.5),
+    0 0 0 4px rgba(255, 79, 139, 0.12),
+    inset 0 1px 0 rgba(255, 255, 255, 0.45); }
+  50% { box-shadow:
+    0 12px 34px rgba(226, 58, 114, 0.62),
+    0 0 0 9px rgba(255, 79, 139, 0.05),
+    inset 0 1px 0 rgba(255, 255, 255, 0.45); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .music-toggle.playing,
+  .music-toggle.playing .music-icon {
+    animation: none;
+  }
 }
 
 /* ==========================================================================

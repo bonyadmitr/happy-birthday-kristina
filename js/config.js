@@ -15,7 +15,7 @@ window.BIRTHDAY_CONFIG = {
   // --- Hero (первый экран после распаковки) ---
   hero: {
     greeting: "С днём рождения,",
-    subtitle: "Сегодня — твой день. Пусть он будет таким же тёплым, как ты. ❤️",
+    subtitle: "Сегодня – твой день! Пусть он будет таким же мимими, как и ты, дорогая ❤️",
   },
 
   // --- Финал ---
@@ -30,7 +30,7 @@ window.BIRTHDAY_CONFIG = {
   // Положи mp3 в assets/audio/ и впиши путь. Пусто → кнопки музыки не будет.
   // Стартует только по нажатию (политика iOS).
   music: {
-    url: "", // напр. "assets/audio/song.mp3"
-    title: "Наша песня",
+    url: "assets/audio/mary-on-a-cross-loop.mp3",
+    title: "Ghost — Mary on a Cross",
   },
 };

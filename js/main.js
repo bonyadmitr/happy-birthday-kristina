@@ -7,6 +7,12 @@
   var CFG = window.BIRTHDAY_CONFIG || {};
   var reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
+  // Запрет масштабирования (Safari на iOS игнорирует user-scalable=no) —
+  // гасим pinch-жесты. Двойной-тап-зум снимается через touch-action: manipulation в CSS.
+  ["gesturestart", "gesturechange", "gestureend"].forEach(function (ev) {
+    document.addEventListener(ev, function (e) { e.preventDefault(); }, { passive: false });
+  });
+
   function $(id) {
     return document.getElementById(id);
   }
@@ -59,7 +65,8 @@
   var heartShapes = null;
   function getHeartShapes() {
     if (heartShapes === null && typeof confetti === "function" && confetti.shapeFromText) {
-      heartShapes = ["❤️", "🩷", "💕", "💖", "💗", "💘"].map(function (t) {
+      // Красных больше, чем розовых: ❤️ повторён + ❤️‍🔥 (шансы взвешиваются частотой в массиве).
+      heartShapes = ["❤️", "❤️", "❤️‍🔥", "❤️‍🔥", "🩷", "💕", "💖", "💘"].map(function (t) {
         return confetti.shapeFromText({ text: t, scalar: 2.6 });
       });
     }
