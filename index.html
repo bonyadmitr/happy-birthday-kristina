@@ -13,6 +13,14 @@
   />
   <title>С днём рождения 🎂</title>
   <meta name="description" content="Поздравление с днём рождения" />
+
+  <!-- PWA: манифест + иконки. Пути относительные — сайт живёт в подпапке GitHub Pages. -->
+  <link rel="manifest" href="manifest.json" />
+  <!-- iOS частично игнорирует манифест: установку на «Домой» держат apple-теги ниже. -->
+  <link rel="apple-touch-icon" href="assets/icons/apple-touch-icon-180.png" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="Кристине" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link
@@ -80,5 +88,15 @@
   <script src="js/config.js"></script>
   <script src="js/confetti.js"></script>
   <script src="js/main.js"></script>
+
+  <!-- PWA: тихая регистрация service worker (офлайн). Не на file:// — иначе ошибка
+       при прямом открытии файла. Без UI: установка через нативное меню браузера. -->
+  <script>
+    if ("serviceWorker" in navigator && location.protocol !== "file:") {
+      window.addEventListener("load", () => {
+        navigator.serviceWorker.register("sw.js").catch(() => {});
+      });
+    }
+  </script>
 </body>
 </html>

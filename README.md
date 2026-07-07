@@ -2,6 +2,8 @@
 
 Интерактивный сайт-поздравление. Чистые HTML/CSS/JS, без сборки — просто открывается в браузере.
 Сделан iPhone-first (Safari): распаковка подарка → тёплое поздравление → финальная буква «Л».
+Это **PWA**: можно добавить на экран «Домой» иконкой-приложением (открывается в полный экран)
+и открывать офлайн.
 
 **Живой сайт:** https://bonyadmitr.github.io/happy-birthday-kristina/
 
@@ -53,12 +55,16 @@ git add -A && git commit -m "..." && git push   # Pages пересоберётс
 ## Структура
 
 ```
-index.html            — разметка + фон-слой .bg + фавикон
+index.html            — разметка + фон-слой .bg + фавикон + PWA-мета/регистрация SW
+manifest.json         — PWA-манифест (иконки, standalone, цвета)
+sw.js                 — service worker (офлайн-кэш)
 css/styles.css        — стили + палитра/шрифты (CSS-переменные в :root) + фон
 js/config.js          — ВСЯ персонализация
 js/main.js            — логика (распаковка, конфетти, сердечки, частицы, музыка, зум-гард)
 js/confetti.js        — вшитый canvas-confetti (без внешнего CDN)
 assets/audio/         — сюда mp3 для музыки
+assets/icons/         — PWA-иконки (PNG из ❤️; `npm run icons`)
+scripts/gen-icons.mjs — генератор иконок (dev-only, не деплоится)
 tests/e2e.spec.js     — Playwright E2E (dev-only, не деплоится)
 playwright.config.js  — WebKit(iPhone) + реальный Chrome
 ```

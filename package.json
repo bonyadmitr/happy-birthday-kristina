@@ -6,6 +6,7 @@
   "scripts": {
     "test": "playwright test",
     "test:report": "playwright show-report",
+    "icons": "node scripts/gen-icons.mjs",
     "serve": "python3 -m http.server 8123"
   },
   "devDependencies": {

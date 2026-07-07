@@ -130,6 +130,53 @@ test.describe("После раскрытия", () => {
   });
 });
 
+// PWA: манифест, иконки, регистрация service worker. Пути относительные —
+// из-за подпапки GitHub Pages (см. sw.js / manifest.json).
+test.describe("PWA", () => {
+  test("манифест слинкован и валиден, пути относительные", async ({ page, request }) => {
+    await page.goto("/");
+    // ссылка в <head>
+    await expect(page.locator('link[rel="manifest"]')).toHaveAttribute("href", "manifest.json");
+    // сам файл отдаётся и парсится
+    const res = await request.get("/manifest.json");
+    expect(res.status()).toBe(200);
+    const m = await res.json();
+    expect(m.icons.length).toBeGreaterThanOrEqual(2);
+    // относительные (не начинаются с "/") — иначе сломается в подпапке Pages
+    expect(m.start_url).toBe("./");
+    expect(m.scope).toBe("./");
+    for (const ic of m.icons) expect(ic.src.startsWith("/")).toBe(false);
+  });
+
+  test("все иконки отдаются (нет 404)", async ({ page, request }) => {
+    const res = await request.get("/manifest.json");
+    const m = await res.json();
+    const srcs = m.icons.map((i) => i.src);
+    // apple-touch-icon берём из DOM
+    await page.goto("/");
+    const apple = await page.getAttribute('link[rel="apple-touch-icon"]', "href");
+    srcs.push(apple);
+    for (const src of srcs) {
+      const r = await request.get("/" + src);
+      expect(r.status(), src).toBe(200);
+    }
+  });
+
+  test("service worker регистрируется", async ({ page }) => {
+    await page.goto("/");
+    // register() висит на window.load; ждём готовности с запасом по времени
+    const scope = await page.evaluate(async () => {
+      if (!("serviceWorker" in navigator)) return null;
+      const reg = await Promise.race([
+        navigator.serviceWorker.ready,
+        new Promise((r) => setTimeout(() => r(null), 8000)),
+      ]);
+      return reg ? reg.scope : null;
+    });
+    expect(scope).toBeTruthy();
+  });
+});
+
 // Спец-тест: музыка работает (звук по-прежнему заглушён init-скриптом выше —
 // проверяем именно состояние воспроизведения, а не слышимость).
 test.describe("Музыка", () => {
