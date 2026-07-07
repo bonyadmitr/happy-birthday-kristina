@@ -1,3 +1,9 @@
 .DS_Store
 Thumbs.db
 *.log
+
+# Dev/тесты — не деплоится (GitHub Pages отдаёт только статику)
+node_modules/
+test-results/
+playwright-report/
+.playwright/
