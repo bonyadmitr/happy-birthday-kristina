@@ -13,6 +13,22 @@ function trackErrors(page) {
   return errors;
 }
 
+// Глушим звук во ВСЕХ тестах (init-скрипт ставится до загрузки страницы,
+// патчит прототип audio: muted+volume 0 при каждом play). Это выключает только
+// звук — состояние воспроизведения (paused) не меняется, поэтому спец-тест музыки
+// ниже всё равно может проверить, что трек «играет».
+test.beforeEach(async ({ page }) => {
+  await page.addInitScript(() => {
+    const proto = HTMLMediaElement.prototype;
+    const origPlay = proto.play;
+    proto.play = function () {
+      this.muted = true;
+      this.volume = 0;
+      return origPlay.apply(this, arguments);
+    };
+  });
+});
+
 // Открыть подарок и дождаться показа основного сайта.
 // force:true — подарок постоянно анимируется (gift-idle), Playwright иначе
 // бесконечно ждёт «стабильности» элемента.
@@ -111,5 +127,36 @@ test.describe("После раскрытия", () => {
     await page.locator("#finale-letter").dblclick({ force: true });
     const sel = await page.evaluate(() => window.getSelection().toString());
     expect(sel).toBe("");
+  });
+});
+
+// Спец-тест: музыка работает (звук по-прежнему заглушён init-скриптом выше —
+// проверяем именно состояние воспроизведения, а не слышимость).
+test.describe("Музыка", () => {
+  test("кнопка появляется и трек играет после тапа по подарку", async ({ page }) => {
+    await page.goto("/");
+    await openGift(page);
+    await expect(page.locator("#music-toggle")).toBeVisible();
+    // play() внутри жеста тапа — дождёмся, что аудио перестало быть на паузе
+    await expect
+      .poll(async () => page.evaluate(() => document.getElementById("bg-audio").paused))
+      .toBe(false);
+    const a = await page.evaluate(() => {
+      const el = document.getElementById("bg-audio");
+      return { hasSrc: !!el.getAttribute("src"), loop: el.loop };
+    });
+    expect(a.hasSrc).toBe(true);
+    expect(a.loop).toBe(true);
+  });
+
+  test("кнопкой можно поставить на паузу и снова включить", async ({ page }) => {
+    await page.goto("/");
+    await openGift(page);
+    const toggle = page.locator("#music-toggle");
+    await expect.poll(() => page.evaluate(() => document.getElementById("bg-audio").paused)).toBe(false);
+    await toggle.click({ force: true }); // пауза
+    await expect.poll(() => page.evaluate(() => document.getElementById("bg-audio").paused)).toBe(true);
+    await toggle.click({ force: true }); // снова играть
+    await expect.poll(() => page.evaluate(() => document.getElementById("bg-audio").paused)).toBe(false);
   });
 });
