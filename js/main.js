@@ -38,6 +38,27 @@
 
   document.title = "С днём рождения, " + (CFG.name || "") + " 🎂";
 
+  // Авто-подгон имени по ширине: если при данном шрифте имя шире ~92% экрана
+  // (длинное имя / узкий экран) — уменьшаем кегль, пока не влезет. Работает
+  // для любого имени из config, не только «Кристина».
+  function fitName() {
+    var el = $("hero-name");
+    if (!el) return;
+    el.style.fontSize = ""; // вернуть размер из CSS (clamp по vw)
+    var size = parseFloat(getComputedStyle(el).fontSize);
+    var limit = window.innerWidth * 0.92;
+    var guard = 0;
+    while (el.getBoundingClientRect().width > limit && size > 16 && guard++ < 80) {
+      size *= 0.96;
+      el.style.fontSize = size + "px";
+    }
+  }
+  var fitTimer;
+  window.addEventListener("resize", function () {
+    clearTimeout(fitTimer);
+    fitTimer = setTimeout(fitName, 120);
+  });
+
   /* ---- Конфетти --------------------------------------------------------- */
   function confettiColors() {
     var raw = getComputedStyle(document.documentElement)
@@ -113,6 +134,7 @@
       giftScreen.classList.add("gone");
       var site = $("site");
       site.hidden = false;
+      fitName();
       // Запустить reveal для первой секции сразу.
       requestAnimationFrame(initReveal);
       startFloaties();
@@ -206,12 +228,14 @@
       var el = document.createElement("span");
       el.className = "floaty";
       el.textContent = EMOJI[i % EMOJI.length];
-      el.style.left = Math.random() * 100 + "vw";
-      el.style.setProperty("--sz", 1.2 + Math.random() * 1.8 + "rem");
+      // Держим частицы внутри вьюпорта по X (левый край 3–82vw, дрейф ±4vw),
+      // чтобы даже без обрезания родителя они не выходили за экран (iOS).
+      el.style.left = (3 + Math.random() * 79).toFixed(1) + "vw";
+      el.style.setProperty("--sz", 1.2 + Math.random() * 1.4 + "rem");
       el.style.setProperty("--op", (0.35 + Math.random() * 0.45).toFixed(2));
       el.style.setProperty("--dur", 11 + Math.random() * 12 + "s");
       el.style.setProperty("--delay", -Math.random() * 12 + "s");
-      el.style.setProperty("--drift", (Math.random() * 16 - 8).toFixed(1) + "vw");
+      el.style.setProperty("--drift", (Math.random() * 8 - 4).toFixed(1) + "vw");
       el.style.setProperty("--spin", Math.floor(Math.random() * 120 - 60) + "deg");
       host.appendChild(el);
     }
