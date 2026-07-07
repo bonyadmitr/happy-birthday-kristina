@@ -253,7 +253,7 @@ body::before {
   font-style: italic;
   font-size: clamp(3.4rem, 19vw, 8rem);
   line-height: 0.98;
-  background: linear-gradient(135deg, var(--accent-deep), var(--accent) 45%, #ff9ec4);
+  background: linear-gradient(100deg, var(--accent-deep), var(--accent) 55%, var(--accent-deep));
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
@@ -336,24 +336,33 @@ body::before {
   max-width: 24ch;
 }
 
+/* Второстепенная кнопка «Ещё конфетти» — мелкая, у самого низа экрана */
 .btn-replay {
+  position: absolute;
+  left: 50%;
+  bottom: max(1.25rem, env(safe-area-inset-bottom));
+  transform: translateX(-50%);
   font: inherit;
-  font-weight: 700;
-  font-size: 1rem;
-  color: var(--accent-deep);
-  background: var(--card);
-  border: 1.5px solid color-mix(in srgb, var(--accent) 45%, transparent);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-  padding: 0.85rem 1.7rem;
-  min-height: 48px;
+  font-weight: 600;
+  font-size: 0.82rem;
+  letter-spacing: 0.03em;
+  color: var(--text-soft);
+  background: color-mix(in srgb, var(--card) 70%, transparent);
+  border: 1px solid color-mix(in srgb, var(--accent) 28%, transparent);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  padding: 0.5rem 1.05rem;
+  min-height: 40px;
   border-radius: 999px;
   cursor: pointer;
-  box-shadow: var(--shadow-soft);
-  transition: transform 0.15s ease, background 0.3s ease;
+  opacity: 0.8;
+  transition: transform 0.15s ease, opacity 0.2s ease;
+}
+.btn-replay:hover {
+  opacity: 1;
 }
 .btn-replay:active {
-  transform: scale(0.96);
+  transform: translateX(-50%) scale(0.95);
 }
 
 /* ==========================================================================

@@ -153,8 +153,7 @@
   var replay = $("btn-replay");
   if (replay) {
     replay.addEventListener("click", function () {
-      window.scrollTo({ top: 0, behavior: "smooth" });
-      setTimeout(celebrate, 400);
+      celebrate();
     });
   }
 
