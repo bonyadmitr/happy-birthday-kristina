@@ -3,6 +3,8 @@
 Интерактивный сайт-поздравление. Чистые HTML/CSS/JS, без сборки — просто открывается в браузере.
 Сделан iPhone-first (Safari): распаковка подарка → тёплое поздравление → финальная буква «Л».
 
+**Живой сайт:** https://bonyadmitr.github.io/happy-birthday-kristina/
+
 ## Как посмотреть локально
 
 ```bash
@@ -11,6 +13,18 @@ python3 -m http.server 8000
 ```
 
 (Можно и просто открыть `index.html` двойным кликом, но локальный сервер ближе к боевому.)
+
+## Как проверить (тесты)
+
+```bash
+npm install            # один раз: ставит Playwright (dev-only)
+npm test               # E2E в WebKit(iPhone) + реальном Chrome, ~11с
+```
+
+Тесты (`tests/e2e.spec.js`) — быстрая замена ручной проверки: ловят горизонтальный скролл,
+центрирование, границы частиц, работу музыки и т.п. WebKit важен — он воспроизводит движок
+Safari/iOS, где всплывает специфика, невидимая в обычном Chrome. Подробности — в
+[docs/DOCUMENTATION.md](docs/DOCUMENTATION.md) §9. Тесты в деплой не попадают.
 
 ## Как персонализировать
 
@@ -25,26 +39,26 @@ python3 -m http.server 8000
 
 ## Деплой на GitHub Pages
 
-1. Создай репозиторий `happy-birthday-kristina` на GitHub.
-2. Запушь содержимое этой папки:
-   ```bash
-   git add -A
-   git commit -m "Birthday site for Kristina"
-   git branch -M main
-   git remote add origin https://github.com/<username>/happy-birthday-kristina.git
-   git push -u origin main
-   ```
-3. В репозитории: **Settings → Pages → Source: `Deploy from a branch` → Branch: `main` / `root`** → Save.
-4. Через ~1 минуту сайт будет доступен по адресу
-   `https://<username>.github.io/happy-birthday-kristina/`.
+Уже задеплоено (репозиторий `bonyadmitr/happy-birthday-kristina`, Pages включён).
+Повторный деплой после правок:
+
+```bash
+git add -A && git commit -m "..." && git push   # Pages пересоберётся сам за ~1 мин
+```
+
+Есть пошаговый скилл `/deploy` (`.claude/skills/deploy/SKILL.md`) — создание репо,
+включение Pages и проверка живого сайта. Первичная настройка (если делать заново):
+**Settings → Pages → Source: Deploy from a branch → Branch: `main` / `root`**.
 
 ## Структура
 
 ```
-index.html          — разметка
-css/styles.css      — стили + палитра/шрифты (CSS-переменные в :root)
-js/config.js        — ВСЯ персонализация
-js/main.js          — логика (распаковка, конфетти, сердечки, частицы, музыка)
-js/confetti.js      — вшитый canvas-confetti (без внешнего CDN)
-assets/audio/       — сюда mp3 для музыки
+index.html            — разметка + фон-слой .bg + фавикон
+css/styles.css        — стили + палитра/шрифты (CSS-переменные в :root) + фон
+js/config.js          — ВСЯ персонализация
+js/main.js            — логика (распаковка, конфетти, сердечки, частицы, музыка, зум-гард)
+js/confetti.js        — вшитый canvas-confetti (без внешнего CDN)
+assets/audio/         — сюда mp3 для музыки
+tests/e2e.spec.js     — Playwright E2E (dev-only, не деплоится)
+playwright.config.js  — WebKit(iPhone) + реальный Chrome
 ```
