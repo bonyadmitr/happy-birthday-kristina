@@ -15,29 +15,6 @@
     if (el && value != null && value !== "") el.textContent = value;
   }
 
-  /* ---- Тема ------------------------------------------------------------- */
-  var VALID_THEMES = ["romantic", "elegant", "playful", "dreamy"];
-  function applyTheme(theme) {
-    if (VALID_THEMES.indexOf(theme) === -1) return;
-    document.documentElement.setAttribute("data-theme", theme);
-    var meta = document.querySelector('meta[name="theme-color"]');
-    if (meta) {
-      var accent = getComputedStyle(document.documentElement)
-        .getPropertyValue("--accent")
-        .trim();
-      if (accent) meta.setAttribute("content", accent);
-    }
-  }
-  var urlTheme = new URLSearchParams(location.search).get("theme");
-  applyTheme(urlTheme || CFG.theme || "romantic");
-
-  document.querySelectorAll("[data-theme-btn]").forEach(function (btn) {
-    btn.addEventListener("click", function () {
-      applyTheme(btn.getAttribute("data-theme-btn"));
-      // Обновить цвета уже летающих конфетти при следующем залпе — они читают из CSS.
-    });
-  });
-
   /* ---- Наполнение из конфига ------------------------------------------- */
   setText("gift-hint", (CFG.gift && CFG.gift.hint) || "Нажми на подарок 🎁");
   setText("hero-greeting", CFG.hero && CFG.hero.greeting);
