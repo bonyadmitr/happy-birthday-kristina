@@ -19,7 +19,10 @@ module.exports = defineConfig({
     timeout: 30000,
   },
   projects: [
+    // WebKit — бандловая сборка Playwright (реальный Safari недоступен для управления);
+    // ближайший быстрый прокси к движку iOS Safari, эмуляция iPhone (dpr 3).
     { name: "iphone-safari", use: { ...devices["iPhone 13"] } },
-    { name: "android-chrome", use: { ...devices["Pixel 7"] } },
+    // Chrome — РЕАЛЬНЫЙ установленный (channel:"chrome"), без скачанного Chromium.
+    { name: "mobile-chrome", use: { ...devices["Pixel 7"], channel: "chrome" } },
   ],
 });
