@@ -62,7 +62,9 @@ body {
   touch-action: manipulation;
   font-family: var(--font-body);
   color: var(--text);
-  background-color: var(--rose-100);
+  /* прозрачно: базовый цвет и меш-градиенты живут на слое .bg (z-index:-1),
+     иначе непрозрачная заливка body перекрыла бы их */
+  background: transparent;
   -webkit-font-smoothing: antialiased;
   -webkit-tap-highlight-color: transparent;
   /* Сайт-открытка: выделять/копировать нечего — убираем выделение при
