@@ -141,7 +141,7 @@
     }, 620);
   }
 
-  giftScreen.addEventListener("click", openGift);
+  gift.addEventListener("click", openGift);
   gift.addEventListener("keydown", function (e) {
     if (e.key === "Enter" || e.key === " ") {
       e.preventDefault();
@@ -261,15 +261,15 @@
       }
       playing = !playing;
     });
-    // Автостарт при первой распаковке (в рамках пользовательского жеста).
-    giftScreen.addEventListener(
+    // Автостарт при первой распаковке (в рамках пользовательского жеста — тап по подарку).
+    gift.addEventListener(
       "click",
       function once() {
         audio.play().then(function () {
           playing = true;
           toggle.classList.add("playing");
         }).catch(function () {});
-        giftScreen.removeEventListener("click", once);
+        gift.removeEventListener("click", once);
       }
     );
   }
