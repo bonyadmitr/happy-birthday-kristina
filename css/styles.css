@@ -65,6 +65,11 @@ body {
   overflow-x: hidden;
   -webkit-font-smoothing: antialiased;
   -webkit-tap-highlight-color: transparent;
+  /* Сайт-открытка: выделять/копировать нечего — убираем выделение при
+     двойном тапе (особенно по крупной «Л») и iOS-callout по долгому нажатию. */
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
 }
 
 /* Тонкая зернистость поверх — «съедает» плоскость градиента */
@@ -252,10 +257,11 @@ body::before {
   font-weight: 600;
   font-style: italic;
   font-size: clamp(3.4rem, 19vw, 8rem);
-  line-height: 0.98;
-  /* небольшие отступы, чтобы background-clip:text не срезал italic-терминалы букв */
-  padding: 0.06em 0.18em;
-  background: linear-gradient(100deg, var(--accent-deep), var(--accent) 55%, var(--accent-deep));
+  line-height: 1.06;
+  /* отступы, чтобы background-clip:text не срезал italic-терминалы и хвост «р» снизу */
+  padding: 0.08em 0.2em 0.22em;
+  /* мягкий градиент — лёгкая игра оттенка, без сильного ухода в светлый */
+  background: linear-gradient(115deg, var(--accent-deep), var(--accent) 60%, #ff85af);
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
