@@ -55,15 +55,41 @@
       boom({ particleCount: 60, angle: 120, spread: 60, origin: { x: 1, y: 0.65 } });
     }, 180);
   }
-  function heartsBurst() {
-    boom({
-      particleCount: 40,
-      spread: 100,
-      startVelocity: 42,
-      scalar: 1.4,
-      origin: { y: 0.5 },
-      shapes: ["circle"],
-    });
+  // Разные сердечки-эмодзи как формы для конфетти (создаём один раз).
+  var heartShapes = null;
+  function getHeartShapes() {
+    if (heartShapes === null && typeof confetti === "function" && confetti.shapeFromText) {
+      heartShapes = ["❤️", "🩷", "💕", "💖", "💗", "💘"].map(function (t) {
+        return confetti.shapeFromText({ text: t, scalar: 2.6 });
+      });
+    }
+    return heartShapes;
+  }
+  // Салют из сердечек, вылетающих из самой буквы «Л».
+  function heartsBurst(originEl) {
+    if (typeof confetti !== "function") return;
+    var origin = { y: 0.5 };
+    if (originEl) {
+      var r = originEl.getBoundingClientRect();
+      origin = {
+        x: (r.left + r.width / 2) / window.innerWidth,
+        y: (r.top + r.height / 2) / window.innerHeight,
+      };
+    }
+    var opts = {
+      particleCount: 26,
+      spread: 90,
+      startVelocity: 40,
+      scalar: 2.6,
+      gravity: 0.9,
+      ticks: 220,
+      flat: true,
+      origin: origin,
+      disableForReducedMotion: true,
+    };
+    var shapes = getHeartShapes();
+    if (shapes && shapes.length) opts.shapes = shapes;
+    confetti(opts);
   }
 
   /* ---- Распаковка подарка ---------------------------------------------- */
@@ -140,11 +166,13 @@
   /* ---- Финал: буква «Л» ------------------------------------------------- */
   var finaleLetter = $("finale-letter");
   if (finaleLetter) {
-    finaleLetter.addEventListener("click", heartsBurst);
+    finaleLetter.addEventListener("click", function () {
+      heartsBurst(finaleLetter);
+    });
     finaleLetter.addEventListener("keydown", function (e) {
       if (e.key === "Enter" || e.key === " ") {
         e.preventDefault();
-        heartsBurst();
+        heartsBurst(finaleLetter);
       }
     });
   }
