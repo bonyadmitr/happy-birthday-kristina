@@ -1,7 +1,8 @@
 # 🎂 С днём рождения, Кристина
 
 Интерактивный сайт-поздравление. Чистые HTML/CSS/JS, без сборки — просто открывается в браузере.
-Сделан iPhone-first (Safari): распаковка подарка → тёплое поздравление → финальная буква «Л».
+Сделан iPhone-first (Safari): распаковка подарка → тёплое поздравление → финальная буква «Л»
+с мини ритм-игрой под песню (жми в такт, стиль сердцебиения).
 Это **PWA**: можно добавить на экран «Домой» иконкой-приложением (открывается в полный экран)
 и открывать офлайн.
 
@@ -20,7 +21,7 @@ python3 -m http.server 8000
 
 ```bash
 npm install            # один раз: ставит Playwright (dev-only)
-npm test               # E2E в WebKit(iPhone) + реальном Chrome, ~11с
+npm test               # E2E в WebKit(iPhone) + реальном Chrome, ~25с
 ```
 
 Тесты (`tests/e2e.spec.js`) — быстрая замена ручной проверки: ловят горизонтальный скролл,
@@ -38,6 +39,9 @@ Safari/iOS, где всплывает специфика, невидимая в 
   Меняешь переменные — меняется весь сайт.
 - **Музыка** (необязательно) — положи mp3 в `assets/audio/` и впиши путь в `music.url`.
   Запускается по тапу (политика автоплея iOS). Пусто → кнопки музыки нет.
+- **Ритм-игра** — тексты в `finale.play`/`playHint`/`replayGame`/`gameEnd`. Ритм-карта под
+  песню — `js/rhythm-beatmap.js` (генерится, при смене песни пере-собрать — см.
+  [docs/DOCUMENTATION.md](docs/DOCUMENTATION.md) §13).
 
 ## Деплой на GitHub Pages
 
@@ -60,11 +64,14 @@ manifest.json         — PWA-манифест (иконки, standalone, цве
 sw.js                 — service worker (офлайн-кэш)
 css/styles.css        — стили + палитра/шрифты (CSS-переменные в :root) + фон
 js/config.js          — ВСЯ персонализация
-js/main.js            — логика (распаковка, конфетти, сердечки, частицы, музыка, зум-гард)
+js/main.js            — логика (распаковка, конфетти, сердечки, частицы, музыка, зум-гард, ритм-игра)
+js/rhythm.js          — движок ритм-игры (портируемый)
+js/rhythm-beatmap.js  — карта битов песни (генерится)
 js/confetti.js        — вшитый canvas-confetti (без внешнего CDN)
 assets/audio/         — сюда mp3 для музыки
 assets/icons/         — PWA-иконки (PNG из ❤️; `npm run icons`)
 scripts/gen-icons.mjs — генератор иконок (dev-only, не деплоится)
+tools/beatmap/        — извлечение карты битов (librosa, dev-only, не деплоится)
 tests/e2e.spec.js     — Playwright E2E (dev-only, не деплоится)
 playwright.config.js  — WebKit(iPhone) + реальный Chrome
 ```
