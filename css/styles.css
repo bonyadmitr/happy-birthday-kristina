@@ -32,6 +32,11 @@
   --card: rgba(255, 255, 255, 0.5);
   --confetti-colors: #ff4f8b, #ffa5c3, #ffce54, #ffffff, #ff8fbf;
 
+  /* Ритм-игра */
+  --rg-lane: rgba(255, 255, 255, 0.45); /* фон полосы */
+  --rg-target: var(--accent); /* кольцо-цель */
+  --rg-note: var(--accent-deep); /* нота */
+
   /* Шрифты: выразительная связка «дисплей + текст» */
   --font-display: "Playfair Display", Georgia, serif;
   --font-body: "Manrope", system-ui, -apple-system, sans-serif;
@@ -387,6 +392,144 @@ body {
 }
 .btn-replay:active {
   transform: translateX(-50%) scale(0.95);
+}
+
+/* ==========================================================================
+   Ритм-игра (на финальном экране, под «Л»)
+   ========================================================================== */
+/* [hidden] + display: держим правило, иначе display перебьёт HTML-атрибут */
+.rhythm-hint[hidden],
+.btn-play[hidden],
+.rhythm[hidden] {
+  display: none;
+}
+
+/* Призыв над кнопкой «Играть» */
+.rhythm-hint {
+  font-size: clamp(0.95rem, 4vw, 1.15rem);
+  color: var(--text-soft);
+  max-width: 24ch;
+  animation: pulse 2s ease-in-out infinite;
+}
+
+/* Первичная кнопка старта игры — акцентная пилюля */
+.btn-play {
+  font: inherit;
+  font-weight: 700;
+  font-size: clamp(1rem, 4.4vw, 1.2rem);
+  letter-spacing: 0.02em;
+  color: #fff;
+  background: linear-gradient(140deg, #ff8fbf 0%, var(--accent) 48%, var(--accent-deep) 100%);
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  padding: 0.72rem 1.6rem;
+  min-height: 48px;
+  border-radius: 999px;
+  cursor: pointer;
+  box-shadow:
+    0 10px 26px rgba(226, 58, 114, 0.42),
+    inset 0 1px 0 rgba(255, 255, 255, 0.4);
+  transition: transform 0.15s ease, box-shadow 0.25s ease;
+}
+.btn-play:active {
+  transform: scale(0.95);
+}
+.btn-play:focus-visible {
+  outline: 3px solid var(--accent);
+  outline-offset: 4px;
+}
+
+/* Контейнер игры: полоса + комбо */
+.rhythm {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.9rem;
+}
+
+/* Полоса-сердцебиение. contain:layout paint — ноты с transform не вылезают за
+   бокс и не дают горизонтальный скролл (iOS-гоча, как у .floaties). */
+.rhythm-lane {
+  position: relative;
+  width: min(92vw, 520px);
+  height: 68px;
+  border-radius: 999px;
+  overflow: hidden;
+  contain: layout paint;
+  background: var(--rg-lane);
+  border: 1px solid color-mix(in srgb, var(--accent) 22%, transparent);
+  box-shadow: inset 0 1px 3px rgba(226, 58, 114, 0.12);
+  -webkit-backdrop-filter: blur(4px);
+  backdrop-filter: blur(4px);
+}
+/* Осевая линия, вдоль которой едут ноты */
+.rhythm-lane::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 50%;
+  height: 2px;
+  transform: translateY(-50%);
+  background: color-mix(in srgb, var(--accent) 22%, transparent);
+}
+
+/* Кольцо-цель слева (позиция синхронна targetPct=12% в js/rhythm.js) */
+.rhythm-target {
+  position: absolute;
+  left: 12%;
+  top: 50%;
+  width: 46px;
+  height: 46px;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  border: 3px solid var(--rg-target);
+  box-shadow: 0 0 12px color-mix(in srgb, var(--accent) 45%, transparent);
+  transition: transform 0.12s ease, box-shadow 0.12s ease;
+}
+.rhythm-target.flash {
+  transform: translate(-50%, -50%) scale(1.18);
+  box-shadow: 0 0 22px var(--accent);
+}
+
+/* Нота — точка, едет справа к кольцу. left задаётся из JS в %. */
+.rhythm-note {
+  position: absolute;
+  top: 50%;
+  width: 22px;
+  height: 22px;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, #fff, var(--rg-note));
+  box-shadow: 0 0 8px color-mix(in srgb, var(--accent) 50%, transparent);
+  will-change: left;
+}
+.rhythm-note.hit {
+  transition: transform 0.2s ease, opacity 0.2s ease;
+  transform: translate(-50%, -50%) scale(1.9);
+  opacity: 0;
+}
+.rhythm-note.miss {
+  transition: opacity 0.2s ease;
+  opacity: 0;
+}
+
+/* Комбо-счётчик под полосой */
+.rhythm-combo {
+  min-height: 1.5em;
+  font-family: var(--font-display);
+  font-style: italic;
+  font-size: clamp(1.1rem, 5vw, 1.6rem);
+  color: var(--accent-deep);
+  letter-spacing: 0.02em;
+}
+
+/* В режиме игры «Л» перестаёт idle-пульсировать и становится кнопкой-целью */
+.finale.playing .finale-letter {
+  animation: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .rhythm-hint { animation: none; }
 }
 
 /* ==========================================================================
