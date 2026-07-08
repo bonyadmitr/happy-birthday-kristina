@@ -23,7 +23,6 @@
   --rose-50: #fff2f7;
   --rose-100: #ffe1ec;
   --rose-200: #ffc9dd;
-  --rose-300: #ffb0cd;
   --accent: #ff4f8b; /* доминирующий акцент */
   --accent-deep: #e23a72;
   --text: #6e2b47;
@@ -36,10 +35,6 @@
   /* Шрифты: выразительная связка «дисплей + текст» */
   --font-display: "Playfair Display", Georgia, serif;
   --font-body: "Manrope", system-ui, -apple-system, sans-serif;
-
-  /* Тени / свечение */
-  --shadow-soft: 0 18px 50px rgba(226, 58, 114, 0.18);
-  --glow: 0 0 80px color-mix(in srgb, var(--accent) 40%, transparent);
 }
 
 /* ==========================================================================
