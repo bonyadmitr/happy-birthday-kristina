@@ -10,7 +10,7 @@
 //  Версию кэша (CACHE) поднимать при изменении закэшированных ассетов — иначе
 //  у уже установивших останется старая версия (cache-first не идёт в сеть за свежим).
 // ============================================================================
-const CACHE = "birthday-v1";
+const CACHE = "birthday-v2";
 const FONTS_CACHE = "birthday-fonts-v1";
 
 // App-shell — относительно scope воркера (подпапка Pages).
@@ -21,6 +21,8 @@ const ASSETS = [
   "css/styles.css",
   "js/config.js",
   "js/confetti.js",
+  "js/rhythm-beatmap.js",
+  "js/rhythm.js",
   "js/main.js",
   "assets/icons/icon-192.png",
   "assets/icons/icon-512.png",
