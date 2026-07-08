@@ -105,13 +105,28 @@
   <script src="js/main.js"></script>
 
   <!-- PWA: тихая регистрация service worker (офлайн). Не на file:// — иначе ошибка
-       при прямом открытии файла. Без UI: установка через нативное меню браузера. -->
+       при прямом открытии файла. Без UI: установка через нативное меню браузера.
+       На localhost SW НЕ регистрируем и сносим ранее установленный + чистим кэши:
+       иначе cache-first отдаёт старые файлы и правки (напр. после regen.sh) не видно
+       без ручной чистки в DevTools. В проде (github.io) PWA/офлайн работает как обычно. -->
   <script>
-    if ("serviceWorker" in navigator && location.protocol !== "file:") {
-      window.addEventListener("load", () => {
-        navigator.serviceWorker.register("sw.js").catch(() => {});
+    (function () {
+      if (!("serviceWorker" in navigator) || location.protocol === "file:") return;
+      var host = location.hostname;
+      var isLocal = host === "localhost" || host === "127.0.0.1" || host === "[::1]";
+      if (isLocal) {
+        navigator.serviceWorker.getRegistrations().then(function (rs) {
+          rs.forEach(function (r) { r.unregister(); });
+        });
+        if (window.caches) {
+          caches.keys().then(function (ks) { ks.forEach(function (k) { caches.delete(k); }); });
+        }
+        return;
+      }
+      window.addEventListener("load", function () {
+        navigator.serviceWorker.register("sw.js").catch(function () {});
       });
-    }
+    })();
   </script>
 </body>
 </html>

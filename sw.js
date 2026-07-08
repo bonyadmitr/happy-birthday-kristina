@@ -10,7 +10,7 @@
 //  Версию кэша (CACHE) поднимать при изменении закэшированных ассетов — иначе
 //  у уже установивших останется старая версия (cache-first не идёт в сеть за свежим).
 // ============================================================================
-const CACHE = "birthday-v4";
+const CACHE = "birthday-v5";
 const FONTS_CACHE = "birthday-fonts-v1";
 
 // App-shell — относительно scope воркера (подпапка Pages).
@@ -59,6 +59,12 @@ self.addEventListener("fetch", (e) => {
   const req = e.request;
   if (req.method !== "GET") return; // мутации не трогаем
   const url = new URL(req.url);
+
+  // Локальная разработка (localhost) — network passthrough, никакого cache-first:
+  // иначе правки на диске (напр. после regen.sh) не видно. В проде кэшируем как обычно.
+  if (url.hostname === "localhost" || url.hostname === "127.0.0.1" || url.hostname === "[::1]") {
+    return;
+  }
 
   // Google Fonts — stale-while-revalidate: отдаём из кэша сразу, тихо обновляем.
   if (isFonts(url)) {

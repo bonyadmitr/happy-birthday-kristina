@@ -162,18 +162,18 @@ test.describe("PWA", () => {
     }
   });
 
-  test("service worker регистрируется", async ({ page }) => {
+  test("service worker: на localhost отключён (dev), файл валиден для прода", async ({ page, request }) => {
+    // На localhost SW намеренно НЕ регистрируем и сносим старый: cache-first иначе
+    // отдаёт устаревшие файлы и мешает отладке (напр. правки после regen.sh не видны).
+    // В проде (github.io) SW регистрируется и даёт офлайн — это проверяется по факту деплоя.
     await page.goto("/");
-    // register() висит на window.load; ждём готовности с запасом по времени
-    const scope = await page.evaluate(async () => {
-      if (!("serviceWorker" in navigator)) return null;
-      const reg = await Promise.race([
-        navigator.serviceWorker.ready,
-        new Promise((r) => setTimeout(() => r(null), 8000)),
-      ]);
-      return reg ? reg.scope : null;
-    });
-    expect(scope).toBeTruthy();
+    await expect
+      .poll(() => page.evaluate(async () => (await navigator.serviceWorker.getRegistrations()).length))
+      .toBe(0);
+    // sw.js при этом отдаётся и валиден (в проде именно он и регистрируется)
+    const res = await request.get("/sw.js");
+    expect(res.status()).toBe(200);
+    expect(await res.text()).toContain("birthday-v");
   });
 });
 
