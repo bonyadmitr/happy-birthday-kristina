@@ -194,13 +194,28 @@
 
   /* ---- Финал: буква «Л» ------------------------------------------------- */
   var finaleLetter = $("finale-letter");
+  var finaleSection = $("finale");
+  function inGame() {
+    return finaleSection && finaleSection.classList.contains("playing");
+  }
+  // Центр «Л» в долях вьюпорта — origin для конфетти-отдачи.
+  function letterOrigin() {
+    if (!finaleLetter) return { x: 0.5, y: 0.5 };
+    var r = finaleLetter.getBoundingClientRect();
+    return {
+      x: (r.left + r.width / 2) / window.innerWidth,
+      y: (r.top + r.height / 2) / window.innerHeight,
+    };
+  }
   if (finaleLetter) {
     finaleLetter.addEventListener("click", function () {
+      if (inGame()) return; // в игре тап по «Л» обрабатывает движок
       heartsBurst(finaleLetter);
     });
     finaleLetter.addEventListener("keydown", function (e) {
       if (e.key === "Enter" || e.key === " ") {
         e.preventDefault();
+        if (inGame()) return;
         heartsBurst(finaleLetter);
       }
     });
@@ -212,6 +227,89 @@
     replay.addEventListener("click", function () {
       celebrate();
     });
+  }
+
+  /* ---- Ритм-игра под «Л» ------------------------------------------------ */
+  // Движок — обобщённый (js/rhythm.js), данные песни — window.RHYTHM_BEATMAP.
+  // Вся привязка к сайту здесь: конфетти на попадание, комбо, пауза idle «Л».
+  var beatmap = window.RHYTHM_BEATMAP;
+  var audioEl = $("bg-audio");
+  if (
+    beatmap &&
+    typeof RhythmGame === "function" &&
+    finaleSection &&
+    finaleLetter &&
+    audioEl &&
+    (CFG.music || {}).url
+  ) {
+    var fin = CFG.finale || {};
+    var btnPlay = $("btn-play");
+    var rhythmHint = $("rhythm-hint");
+    var rhythmBox = $("rhythm");
+    var rhythmLane = $("rhythm-lane");
+    var rhythmTarget = $("rhythm-target");
+    var comboEl = $("rhythm-combo");
+    var game = null;
+
+    // Показать призыв + кнопку старта.
+    if (rhythmHint) {
+      rhythmHint.textContent = fin.playHint || "Сыграй со мной — жми в ритм";
+      rhythmHint.hidden = false;
+    }
+    btnPlay.textContent = fin.play || "Играть в такт";
+    btnPlay.hidden = false;
+
+    function flashTarget() {
+      if (!rhythmTarget) return;
+      rhythmTarget.classList.add("flash");
+      setTimeout(function () {
+        rhythmTarget.classList.remove("flash");
+      }, 120);
+    }
+
+    function startGame() {
+      // Музыка уже играет и зациклена — НЕ перематываем, подхватываем с текущей
+      // позиции. play() внутри жеста — на случай, если стоит на паузе (iOS).
+      audioEl.play().catch(function () {});
+      finaleSection.classList.add("playing");
+      btnPlay.hidden = true;
+      if (rhythmHint) rhythmHint.hidden = true;
+      rhythmBox.hidden = false;
+      comboEl.textContent = "";
+
+      game = RhythmGame({
+        audio: audioEl,
+        mount: rhythmLane,
+        tapTargets: [finaleLetter, rhythmLane],
+        beats: beatmap.beats,
+        duration: beatmap.duration,
+        reducedMotion: reduceMotion,
+        onHit: function (info) {
+          flashTarget();
+          // Обычное конфетти (оптимизированнее эмодзи-сердечек) из зоны «Л».
+          boom({ particleCount: 30, spread: 70, startVelocity: 32, origin: letterOrigin() });
+          comboEl.textContent = "×" + info.combo;
+        },
+        onMiss: function () {
+          comboEl.textContent = "";
+        },
+        onComplete: function () {
+          finaleSection.classList.remove("playing");
+          rhythmBox.hidden = true;
+          comboEl.textContent = "";
+          celebrate(); // большой финальный залп
+          if (rhythmHint) {
+            rhythmHint.textContent = fin.gameEnd || "";
+            rhythmHint.hidden = !fin.gameEnd;
+          }
+          btnPlay.textContent = fin.replayGame || "Ещё раз";
+          btnPlay.hidden = false;
+        },
+      });
+      game.start();
+    }
+
+    btnPlay.addEventListener("click", startGame);
   }
 
   /* ---- Плавающие частицы ------------------------------------------------ */
