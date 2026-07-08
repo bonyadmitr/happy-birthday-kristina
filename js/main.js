@@ -290,7 +290,8 @@
         tapTargets: [finaleLetter, rhythmLane],
         beats: beatmap.beats,
         duration: beatmap.duration,
-        hitWindow: 0.24, // шире окно — легче попадать в такт
+        hitWindow: 0.3, // шире окно — легче попадать в такт
+        leadTime: 2.4, // дольше разгон ноты — больше времени на реакцию
         reducedMotion: reduceMotion,
         onHit: function (info) {
           flashTarget();
