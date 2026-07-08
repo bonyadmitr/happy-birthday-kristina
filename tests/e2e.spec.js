@@ -241,6 +241,55 @@ test.describe("Ритм-игра", () => {
     expect(r.every(Boolean)).toBe(true);
   });
 
+  test("у конца трека не спавнятся ноты, которые не успеть нажать", async ({ page }) => {
+    // Детерминированно, на фейковом аудио: у границы лупа все будущие доли —
+    // следующего прохода (absT > endAbs), их спавнить нельзя (иначе выедут, но
+    // игра кончится раньше, чем доедут до кольца → нажать невозможно).
+    await page.goto("/");
+    const r = await page.evaluate(async () => {
+      function frames(n) {
+        return new Promise((res) => {
+          let i = 0;
+          (function s() {
+            if (i++ >= n) return res();
+            requestAnimationFrame(s);
+          })();
+        });
+      }
+      const mount = document.createElement("div");
+      document.body.appendChild(mount);
+      const fake = {
+        currentTime: 0.1,
+        duration: 10,
+        play: () => Promise.resolve(),
+        addEventListener() {},
+        removeEventListener() {},
+      };
+      const g = window.RhythmGame({
+        audio: fake,
+        mount,
+        tapTargets: [],
+        beats: [1, 2, 3, 4, 5, 6, 7, 8, 9],
+        duration: 10,
+        leadTime: 2,
+        hitWindow: 0.3,
+        minPlay: 3, // startAbs 0.1 → endAbs = 10
+      });
+      g.start();
+      fake.currentTime = 4.0;
+      await frames(4);
+      const midLive = mount.querySelectorAll(".rhythm-note:not(.miss):not(.hit)").length;
+      fake.currentTime = 9.5; // у конца: дальше только доли следующего лупа (>10)
+      await frames(6);
+      const endLive = mount.querySelectorAll(".rhythm-note:not(.miss):not(.hit)").length;
+      g.stop();
+      mount.remove();
+      return { midLive, endLive };
+    });
+    expect(r.midLive).toBeGreaterThan(0); // в середине ноты есть
+    expect(r.endLive).toBe(0); // у конца новых (нажимаемых) нот нет
+  });
+
   test("кнопка «Играть» включает режим игры: полоса, класс, ноты", async ({ page }) => {
     await page.goto("/");
     await startRhythm(page);

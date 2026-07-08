@@ -125,6 +125,10 @@
           var absT = beats[i] + lap * duration;
           var dt = absT - now;
           if (dt > leadTime || dt < -hitWindow) continue;
+          // Не спавнить ноты, чья доля позже конца игры (endAbs): они бы выехали
+          // в последние секунды, но игра завершится раньше, чем они доедут до
+          // кольца — нажать их было бы нельзя.
+          if (absT > endAbs) continue;
           var key = absT.toFixed(3);
           if (!spawned[key]) {
             spawned[key] = true;
