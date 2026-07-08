@@ -7,3 +7,7 @@ node_modules/
 test-results/
 playwright-report/
 .playwright/
+
+# Тулинг извлечения битов: venv и временное аудио (скрипт extract.py коммитим)
+tools/beatmap/.venv/
+tools/beatmap/*.wav
