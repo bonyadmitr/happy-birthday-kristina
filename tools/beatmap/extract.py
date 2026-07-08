@@ -30,6 +30,38 @@ def beats_from_analysis(path, min_gap):
     return duration, beats
 
 
+def beats_from_accents(path, min_gap, top):
+    """Ключевые акценты песни: онсеты (перцептивные атаки нот), отобранные по силе.
+    Даёт НЕравномерный, музыкальный ритм (кластеры + паузы), а не ровный метроном.
+      top — доля самых сильных онсетов, которую оставляем (0.6 = верхние 60%)."""
+    import librosa
+    import numpy as np
+
+    y, sr = librosa.load(path, sr=None, mono=True)
+    duration = librosa.get_duration(y=y, sr=sr)
+    onset_env = librosa.onset.onset_strength(y=y, sr=sr)
+    frames = librosa.onset.onset_detect(onset_envelope=onset_env, sr=sr, backtrack=False)
+    if not len(frames):
+        return duration, []
+    times = librosa.frames_to_time(frames, sr=sr)
+    strengths = onset_env[frames]
+    thresh = np.quantile(strengths, 1.0 - top)
+    cand = [(float(t), float(s)) for t, s in zip(times, strengths) if s >= thresh]
+    return duration, thin_by_strength(cand, min_gap)
+
+
+def thin_by_strength(pairs, min_gap):
+    """Прорядить (t, strength) с зазором min_gap, в конфликте оставляя более сильный."""
+    kept = []  # list of [t, s]
+    for t, s in sorted(pairs):
+        if kept and t - kept[-1][0] < min_gap:
+            if s > kept[-1][1]:
+                kept[-1] = [t, s]  # заменить слабый близкий на более сильный
+            continue
+        kept.append([t, s])
+    return [round(t, 3) for t, _ in kept]
+
+
 def beats_from_bpm(path, bpm, offset, min_gap):
     import librosa
     y, sr = librosa.load(path, sr=None, mono=True)
@@ -80,10 +112,14 @@ def main():
     ap.add_argument("--min-gap", type=float, default=0.28)
     ap.add_argument("--bpm", type=float, default=None)
     ap.add_argument("--offset", type=float, default=0.0)
+    ap.add_argument("--accent", action="store_true", help="ключевые акценты (онсеты по силе), неравномерно")
+    ap.add_argument("--top", type=float, default=0.6, help="доля самых сильных онсетов для --accent")
     args = ap.parse_args()
 
     if args.bpm:
         duration, beats = beats_from_bpm(args.audio, args.bpm, args.offset, args.min_gap)
+    elif args.accent:
+        duration, beats = beats_from_accents(args.audio, args.min_gap, args.top)
     else:
         duration, beats = beats_from_analysis(args.audio, args.min_gap)
 

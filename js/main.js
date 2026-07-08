@@ -267,6 +267,13 @@
       }, 120);
     }
 
+    // Перезапустить анимацию «попа» буквы (reflow сбрасывает предыдущую).
+    function popLetter() {
+      finaleLetter.classList.remove("pop");
+      void finaleLetter.offsetWidth;
+      finaleLetter.classList.add("pop");
+    }
+
     function startGame() {
       // Музыка уже играет и зациклена — НЕ перематываем, подхватываем с текущей
       // позиции. play() внутри жеста — на случай, если стоит на паузе (iOS).
@@ -283,9 +290,11 @@
         tapTargets: [finaleLetter, rhythmLane],
         beats: beatmap.beats,
         duration: beatmap.duration,
+        hitWindow: 0.24, // шире окно — легче попадать в такт
         reducedMotion: reduceMotion,
         onHit: function (info) {
           flashTarget();
+          popLetter(); // короткий «поп» буквы на попадание
           // Обычное конфетти (оптимизированнее эмодзи-сердечек) из зоны «Л».
           boom({ particleCount: 30, spread: 70, startVelocity: 32, origin: letterOrigin() });
           comboEl.textContent = "×" + info.combo;
@@ -295,6 +304,7 @@
         },
         onComplete: function () {
           finaleSection.classList.remove("playing");
+          finaleLetter.classList.remove("pop");
           rhythmBox.hidden = true;
           comboEl.textContent = "";
           celebrate(); // большой финальный залп

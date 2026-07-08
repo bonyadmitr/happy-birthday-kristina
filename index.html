@@ -69,21 +69,23 @@
       </div>
     </section>
 
-    <!-- Финал: одна буква «Л» + ритм-игра под неё -->
+    <!-- Финал: одна буква «Л» + ритм-игра над ней -->
     <section class="section finale" id="finale">
+      <!-- Полоса + комбо НАД буквой: чтобы рука при тапе по «Л» её не закрывала -->
+      <div class="rhythm" id="rhythm" hidden>
+        <p class="rhythm-combo" id="rhythm-combo" aria-live="polite"></p>
+        <div class="rhythm-lane" id="rhythm-lane">
+          <span class="rhythm-target" id="rhythm-target" aria-hidden="true"></span>
+        </div>
+      </div>
+
       <div class="finale-letter reveal" id="finale-letter" role="button" tabindex="0"
         aria-label="Наше «люблю»"></div>
       <p class="finale-caption reveal" id="finale-caption" hidden></p>
 
-      <!-- Ритм-игра: призыв + кнопка старта (idle), полоса + комбо (в игре) -->
+      <!-- Ритм-игра (idle): призыв + кнопка старта -->
       <p class="rhythm-hint" id="rhythm-hint" hidden></p>
       <button class="btn-play" id="btn-play" type="button" hidden></button>
-      <div class="rhythm" id="rhythm" hidden>
-        <div class="rhythm-lane" id="rhythm-lane">
-          <span class="rhythm-target" id="rhythm-target" aria-hidden="true"></span>
-        </div>
-        <p class="rhythm-combo" id="rhythm-combo" aria-live="polite"></p>
-      </div>
 
       <button class="btn-replay" id="btn-replay" type="button"></button>
     </section>
