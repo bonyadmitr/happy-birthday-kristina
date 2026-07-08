@@ -207,3 +207,91 @@ test.describe("Музыка", () => {
     await expect.poll(() => page.evaluate(() => document.getElementById("bg-audio").paused)).toBe(false);
   });
 });
+
+// Ритм-игра под «Л»: чистые хелперы движка + флоу (старт, попадания, границы).
+// Звук заглушён (beforeEach), но currentTime идёт — игру можно гонять.
+test.describe("Ритм-игра", () => {
+  // Довести до финала и запустить игру (музыка = часы, ждём что играет).
+  async function startRhythm(page) {
+    await openGift(page);
+    await expect.poll(() => page.evaluate(() => document.getElementById("bg-audio").paused)).toBe(false);
+    await page.locator("#finale").scrollIntoViewIfNeeded();
+    const btn = page.locator("#btn-play");
+    await expect(btn).toBeVisible();
+    await btn.click({ force: true });
+    await expect(page.locator("#rhythm")).toBeVisible();
+  }
+
+  test("util: endTarget/noteX/nextLaps считают верно", async ({ page }) => {
+    await page.goto("/");
+    const r = await page.evaluate(() => {
+      const u = window.RhythmGame.util,
+        d = 72.716;
+      return [
+        u.endTarget(10, d, 10) === d, // старт в начале → конец на 1-й границе
+        u.endTarget(68, d, 10) === 2 * d, // старт под конец → следующая граница
+        Math.abs(u.noteX(0, 2) - 1) < 1e-9, // у цели
+        u.noteX(2, 2) === 0, // только заспавнилась
+        u.noteX(1, 2) === 0.5, // на полпути
+        u.nextLaps(72.0, 0.1, 0, d) === 1, // обёртка лупа → +1
+        u.nextLaps(10, 10.5, 0, d) === 0, // обычный ход времени
+      ];
+    });
+    expect(r.every(Boolean)).toBe(true);
+  });
+
+  test("кнопка «Играть» включает режим игры: полоса, класс, ноты", async ({ page }) => {
+    await page.goto("/");
+    await startRhythm(page);
+    expect(
+      await page.evaluate(() => document.getElementById("finale").classList.contains("playing"))
+    ).toBe(true);
+    // idle-анимация «Л» снята в режиме игры
+    expect(
+      await page.evaluate(() => getComputedStyle(document.getElementById("finale-letter")).animationName)
+    ).toBe("none");
+    // ноты появляются по мере хода трека
+    await expect
+      .poll(() => page.evaluate(() => document.querySelectorAll("#rhythm-lane .rhythm-note").length), {
+        timeout: 4000,
+      })
+      .toBeGreaterThan(0);
+  });
+
+  test("тап по «Л» в такт растит комбо", async ({ page }) => {
+    await page.goto("/");
+    await startRhythm(page);
+    const combo = await page.evaluate(async () => {
+      const letter = document.getElementById("finale-letter");
+      const lane = document.getElementById("rhythm-lane");
+      const comboEl = document.getElementById("rhythm-combo");
+      let maxText = "";
+      const end = performance.now() + 5000;
+      while (performance.now() < end) {
+        const notes = lane.querySelectorAll(".rhythm-note:not(.hit):not(.miss)");
+        for (const n of notes) {
+          const L = parseFloat(n.style.left);
+          if (L >= 9 && L <= 15) {
+            // нота у кольца-цели
+            letter.dispatchEvent(new PointerEvent("pointerdown", { bubbles: true, cancelable: true }));
+            break;
+          }
+        }
+        if (comboEl.textContent) maxText = comboEl.textContent;
+        await new Promise((r) => setTimeout(r, 25));
+      }
+      return maxText;
+    });
+    expect(combo).toMatch(/×\d+/);
+  });
+
+  test("нет горизонтального переполнения при видимой полосе", async ({ page }) => {
+    await page.goto("/");
+    await startRhythm(page);
+    await page.waitForTimeout(1500); // дать нотам заспавниться и поехать
+    const overflow = await page.evaluate(
+      () => document.documentElement.scrollWidth - document.documentElement.clientWidth
+    );
+    expect(overflow).toBeLessThanOrEqual(1);
+  });
+});
